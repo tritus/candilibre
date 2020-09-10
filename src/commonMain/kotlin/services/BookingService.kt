@@ -1,5 +1,6 @@
 package services
 
+import api.model.BookingResult
 import constants.PARIS_TIMEZONE
 import helpers.BookingHelper
 import kotlinx.coroutines.*
@@ -8,7 +9,7 @@ import kotlinx.datetime.*
 import kotlin.math.abs
 import kotlin.random.Random
 
-internal class BookingService {
+class BookingService {
     private val randomNumberGenerator = Random(Clock.System.now().hashCode())
 
     private val minutesRangeAroundMidday = 5L
@@ -17,23 +18,17 @@ internal class BookingService {
     private val millisecondsRandomDeltaDuringRushHour = 100L // 1/10sec
     private val millisecondsRandomDeltaDuringLazyHour = 60000L // 1min
 
-    private var currentJob: Job? = null
-
-    suspend fun bookASlot() = coroutineScope {
-        currentJob?.cancel()
-        currentJob = launch {
-            while (isActive) {
-                BookingHelper.tryToBookASlot()
-                val waitingTime = getWaitingTime()
-                println("Retry in $waitingTime millisec")
-                delay(waitingTime)
-            }
+    suspend fun tryBooking(): BookingResult {
+        val result = BookingHelper.bookASlot()
+        return if (result != null && result.success) {
+            result
+        } else {
+            // Retry after some delay in case of failure
+            val waitingTime = getWaitingTime()
+            println("Retry in $waitingTime millisec")
+            delay(waitingTime)
+            tryBooking()
         }
-        currentJob?.join()
-    }
-
-    fun stop() {
-        currentJob?.cancel()
     }
 
     private fun getWaitingTime(): Long {

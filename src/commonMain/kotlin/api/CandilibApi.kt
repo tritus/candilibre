@@ -1,10 +1,14 @@
 package api
 
+import api.model.BookingResult
 import api.model.Centre
+import api.model.Place
 import io.ktor.client.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 internal object CandilibApi {
@@ -20,6 +24,8 @@ internal object CandilibApi {
 
     suspend fun getPlacesForCentre(centreId: String): List<String>? = get("candidat/places/$centreId")
 
+    suspend fun bookPlace(place: Place): BookingResult? = patch("candidat/places", Json.encodeToString(place))
+
     // end API endpoints
 
     private suspend inline fun <reified ExpectedResponse> get(
@@ -29,7 +35,20 @@ internal object CandilibApi {
         return try {
             getFromKtor<ExpectedResponse>(endpoint, *urlParams).also { println("API CALL SUCCESS on $endpoint : $it") }
         } catch (e: Throwable) {
-            println("API CALL ERROR : ${e.message}")
+            println("API CALL ERROR on $endpoint : ${e.message}")
+            null
+        }
+    }
+
+    private suspend inline fun <reified ExpectedResponse> patch(
+        endpoint: String,
+        requestBody: String
+    ): ExpectedResponse? {
+        return try {
+            patchFromKtor<ExpectedResponse>(endpoint, requestBody)
+                .also { println("API CALL SUCCESS on $endpoint : $it") }
+        } catch (e: Throwable) {
+            println("API CALL ERROR on $endpoint : ${e.message}")
             null
         }
     }
@@ -40,11 +59,23 @@ internal object CandilibApi {
     ): ExpectedResponse {
         return HttpClient().get<String> {
             val params = urlParams.joinToString("&") { "${it.first}=${it.second}" }
-            val urlString = "$scheme://$appHost/$apiPath/$endpoint?$params"
-            println(urlString)
-            url(urlString)
+            url("$scheme://$appHost/$apiPath/$endpoint?$params")
             header("accept", "application/json")
             header("Authorization", "Bearer $appJWTToken")
+        }.let {
+            Json { ignoreUnknownKeys = true }.decodeFromString(it)
+        }
+    }
+
+    private suspend inline fun <reified ExpectedResponse> patchFromKtor(
+        endpoint: String,
+        requestBody: String
+    ): ExpectedResponse {
+        return HttpClient().patch<String> {
+            url("$scheme://$appHost/$apiPath/$endpoint")
+            header("accept", "application/json")
+            header("Authorization", "Bearer $appJWTToken")
+            body = requestBody
         }.let {
             Json { ignoreUnknownKeys = true }.decodeFromString(it)
         }

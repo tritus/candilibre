@@ -1,15 +1,12 @@
 package helpers
 
 import api.CandilibApi
+import api.model.BookingResult
 import api.model.Centre
+import api.model.Place
 import constants.PARIS_TIMEZONE
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
+import logging.logInFile
 
 internal object BookingHelper {
 
@@ -26,23 +23,25 @@ internal object BookingHelper {
         City("VELIZY VILLACOUBLAY", "78")
     )
 
-    suspend fun tryToBookASlot() = coroutineScope {
-        interestingCities
-            .map { findSlotsInPlace(it) }
-            .flatten()
-            .takeIf { it.isNotEmpty() }
-            ?.also {
-                val slotsList = it.joinToString("\n") { "${it.date.toLocalDateTime(PARIS_TIMEZONE)} in ${it.centreName}" }
-                println("SLOTS AVAILABLE : [\n$slotsList\n]")
-            }
-            ?.firstOrNull()
-            ?.let { book(it) }
-            ?: println("NO SLOT AVAILABLE")
+    suspend fun bookASlot(): BookingResult? = interestingCities
+        .map { findSlotsInPlace(it) }
+        .flatten()
+        .takeIf { it.isNotEmpty() }
+        ?.also { slots -> logAvailableSlots(slots) }
+        ?.minByOrNull { it.date }
+        ?.let { book(it) }
+
+    private fun logAvailableSlots(slots: List<Slot>) {
+        val slotsList =
+            slots.joinToString("\n") { "${it.date.toLocalDateTime(PARIS_TIMEZONE)} in ${it.centreName}" }
+        val logLine = "${Clock.System.now()} : SLOTS AVAILABLE [\n$slotsList\n]"
+        println(logLine)
+        logInFile(logLine)
     }
 
-    private fun book(slot: Slot) {
-        // TODO : implement booking
-    }
+    private suspend fun book(slot: Slot): BookingResult? = slot
+        .toPlace()
+        .let { CandilibApi.bookPlace(it) }
 
     private suspend fun findSlotsInPlace(place: City): List<Slot> = CandilibApi.getCentres(place.dep)
         ?.find { it.data.name == place.name }
@@ -79,5 +78,12 @@ internal object BookingHelper {
         val dateString: String, // We keep it to be able to send it back to the server without modifying it.
         val centreName: String,
         val centreId: String
-    )
+    ) {
+        fun toPlace() = Place(
+            centreId,
+            dateString,
+            isAccompanied = true,
+            hasDualControlCar = true
+        )
+    }
 }

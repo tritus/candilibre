@@ -1,5 +1,6 @@
 import kotlinx.coroutines.*
+import services.BookingService
 
 fun main() = runBlocking {
-    App.runApp()
+    BookingService().tryBooking()
 }

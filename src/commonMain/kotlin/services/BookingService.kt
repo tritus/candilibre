@@ -24,7 +24,9 @@ internal class BookingService {
         currentJob = launch {
             while (isActive) {
                 BookingHelper.tryToBookASlot()
-                delay(getWaitingTime())
+                val waitingTime = getWaitingTime()
+                println("Retry in $waitingTime millisec")
+                delay(waitingTime)
             }
         }
         currentJob?.join()

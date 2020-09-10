@@ -27,16 +27,15 @@ internal object BookingHelper {
     )
 
     suspend fun tryToBookASlot() = coroutineScope {
-        println("tryToBookASlot")
         interestingCities
-            .map { async { println("findSlotsInPlace $it"); findSlotsInPlace(it) } }
-            .awaitAll()
+            .map { findSlotsInPlace(it) }
             .flatten()
-            .also {
+            .takeIf { it.isNotEmpty() }
+            ?.also {
                 val slotsList = it.joinToString("\n") { "${it.date.toLocalDateTime(PARIS_TIMEZONE)} in ${it.centreName}" }
                 println("SLOTS AVAILABLE : [\n$slotsList\n]")
             }
-            .firstOrNull()
+            ?.firstOrNull()
             ?.let { book(it) }
             ?: println("NO SLOT AVAILABLE")
     }

@@ -32,13 +32,17 @@ internal object BookingHelper {
             .map { async { println("findSlotsInPlace $it"); findSlotsInPlace(it) } }
             .awaitAll()
             .flatten()
+            .also {
+                val slotsList = it.joinToString("\n") { "${it.date.toLocalDateTime(PARIS_TIMEZONE)} in ${it.centreName}" }
+                println("SLOTS AVAILABLE : [\n$slotsList\n]")
+            }
             .firstOrNull()
             ?.let { book(it) }
+            ?: println("NO SLOT AVAILABLE")
     }
 
     private fun book(slot: Slot) {
         // TODO : implement booking
-        println("BOOKING AVAILABLE : ${slot.date.toLocalDateTime(PARIS_TIMEZONE)} in ${slot.centreName}")
     }
 
     private suspend fun findSlotsInPlace(place: City): List<Slot> = CandilibApi.getCentres(place.dep)

@@ -1,14 +1,12 @@
+import services.BookingService
+
 internal object App {
     suspend fun runApp() {
-        println("Starting the app")
-        val worker1 = Worker()
+        val service = BookingService()
         try {
-            println("Starting the worker")
-            worker1.doWork()
-        } catch (e: Throwable) {
-            println("Stopping the worker")
-            worker1.stop()
-            throw e
+            service.bookASlot()
+        } finally {
+            service.stop()
         }
     }
 }

@@ -8,11 +8,11 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 internal object CandilibApi {
-    private val scheme = "https"
-    private val appHost = "beta.interieur.gouv.fr/candilib"
+    private val scheme = "http"
+    private val appHost = "localhost:8000"
     private val apiPath = "api/v2"
     private val appJWTToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmMmQwYmNmZThiN2FiMDAxM2EyZjhmNyIsImxldmVsIjowLCJpYXQiOjE1OTk2ODU3NDYsImV4cCI6MTU5OTk0NDk0Nn0.A1somEp7z5wEQwnBJJt8dnOLyxJvEYttxe4aGm0DlDA"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmNTc5M2FkOGJlODczNGQzMzJiYmY2NiIsImxldmVsIjowLCJpYXQiOjE1OTk1OTk4ODIsImV4cCI6MTU5OTg1OTA4Mn0.IyuVMGeDS08c15gusF8JeTdC4O8krwdSb_8Jf92N99E"
 
     // begin API endpoints
 
@@ -28,11 +28,9 @@ internal object CandilibApi {
     ): ExpectedResponse? {
         return try {
             getFromKtor<ExpectedResponse>(endpoint, *urlParams).also { println("API CALL SUCCESS on $endpoint : $it") }
-        } catch (e: ClientRequestException) {
+        } catch (e: Throwable) {
             println("API CALL ERROR : ${e.message}")
             null
-        } catch (e: Throwable) {
-            throw e
         }
     }
 

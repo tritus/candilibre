@@ -14,8 +14,13 @@ internal object CandilibApi {
     private val appJWTToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmMmQwYmNmZThiN2FiMDAxM2EyZjhmNyIsImxldmVsIjowLCJpYXQiOjE1OTk2ODU3NDYsImV4cCI6MTU5OTk0NDk0Nn0.A1somEp7z5wEQwnBJJt8dnOLyxJvEYttxe4aGm0DlDA"
 
-    suspend fun getCentres(depNumber: String): List<Centre>? =
-        get("candidat/centres", "departement" to depNumber)
+    // begin API endpoints
+
+    suspend fun getCentres(depNumber: String): List<Centre>? = get("candidat/centres", "departement" to depNumber)
+
+    suspend fun getPlacesForCentre(centreId: String): List<String>? = get("candidat/places/$centreId")
+
+    // end API endpoints
 
     private suspend inline fun <reified ExpectedResponse> get(
         endpoint: String,

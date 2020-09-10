@@ -1,0 +1,14 @@
+package constants
+
+enum class City(val serverName: String, val dep: String) {
+    BOBIGNY("BOBIGNY", "93"),
+    GENNEVILLIERS("GENNEVILLIERS", "92"),
+    MAISONS_ALFORT("MAISONS ALFORT", "94"),
+    RUNGIS("RUNGIS", "94"),
+    MASSY("MASSY", "91"),
+    NOISY_LE_GRAND("NOISY LE GRAND", "93"),
+    ROSNY_SOUS_BOIS("ROSNY SOUS BOIS", "93"),
+    SAINT_CLOUD("SAINT CLOUD", "92"),
+    SAINT_LEU_LA_FORET("SAINT LEU LA FORET", "95"),
+    VELIZY_VILLACOUBLAY("VELIZY VILLACOUBLAY", "78")
+}

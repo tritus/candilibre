@@ -1,10 +1,10 @@
 package services
 
 import api.model.BookingResult
+import constants.City
 import constants.PARIS_TIMEZONE
 import helpers.BookingHelper
 import kotlinx.coroutines.*
-import kotlinx.coroutines.NonCancellable.isActive
 import kotlinx.datetime.*
 import kotlin.math.abs
 import kotlin.random.Random
@@ -18,8 +18,8 @@ class BookingService {
     private val millisecondsRandomDeltaDuringRushHour = 100L // 1/10sec
     private val millisecondsRandomDeltaDuringLazyHour = 60000L // 1min
 
-    suspend fun tryBooking(): BookingResult {
-        val result = BookingHelper.bookASlot()
+    suspend fun tryBooking(cities: List<City>, minDate: Instant): BookingResult {
+        val result = BookingHelper.bookASlot(cities, minDate)
         return if (result != null && result.success) {
             result
         } else {
@@ -27,7 +27,7 @@ class BookingService {
             val waitingTime = getWaitingTime()
             println("Retry in $waitingTime millisec")
             delay(waitingTime)
-            tryBooking()
+            tryBooking(cities, minDate)
         }
     }
 

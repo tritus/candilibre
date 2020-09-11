@@ -4,8 +4,10 @@ import api.model.BookingResult
 import constants.City
 import constants.PARIS_TIMEZONE
 import helpers.BookingHelper
-import kotlinx.coroutines.*
-import kotlinx.datetime.*
+import kotlinx.coroutines.delay
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -20,7 +22,7 @@ class BookingService {
 
     suspend fun tryBooking(cities: List<City>, minDate: Instant): BookingResult {
         val result = BookingHelper.bookASlot(cities, minDate)
-        return if (result != null && result.success) {
+        return if (result != null && result.success == true) {
             result
         } else {
             // Retry after some delay in case of failure

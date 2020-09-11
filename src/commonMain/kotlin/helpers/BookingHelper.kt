@@ -36,15 +36,21 @@ internal object BookingHelper {
         .let { CandilibApi.bookPlace(it) }
 
     private suspend fun findSlotsInCity(city: City): List<Slot> = CandilibApi.getCentres(city.dep)
-        ?.find { it.data.name == city.serverName }
-        ?.takeIf { it.count > 0 }
+        ?.find { it.data?.name == city.serverName }
+        ?.takeIf { it.count != null && it.count > 0 }
         ?.let { findSlotsInCentre(it) }
         ?: emptyList()
 
-    private suspend fun findSlotsInCentre(centre: Centre): List<Slot>? = CandilibApi.getPlacesForCentre(centre.data.id)
+    private suspend fun findSlotsInCentre(centre: Centre): List<Slot>? = requireNotNull(
+        centre.data?.id
+    ) { "centre id is required to look for places in the centre" }
+        .let { CandilibApi.getPlacesForCentre(it) }
         ?.map { toSlot(it, centre) }
 
-    private fun toSlot(dateString: String, centre: Centre) = Slot(parse(dateString), centre.data.name)
+    private fun toSlot(dateString: String, centre: Centre) = Slot(
+        parse(dateString),
+        requireNotNull(centre.data?.name) { "centre name must not be null to be able to book a slot" }
+    )
 
     private fun toPlace(slot: Slot) = Place(
         slot.centreName,

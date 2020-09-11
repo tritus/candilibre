@@ -1,5 +1,6 @@
 package api
 
+import api.engine.httpClientEngine
 import api.model.BookingResult
 import api.model.Centre
 import api.model.Place
@@ -11,7 +12,9 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.url
+import io.ktor.content.TextContent
 import io.ktor.http.ContentType
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 internal object CandilibApi {
@@ -59,11 +62,9 @@ internal object CandilibApi {
     private suspend inline fun <reified ExpectedResponse> getFromKtor(
         endpoint: String,
         vararg urlParams: Pair<String, String>
-    ): ExpectedResponse {
-        return httpClient().get {
-            val params = urlParams.joinToString("&") { "${it.first}=${it.second}" }
-            url("$scheme://$appHost/$apiPath/$endpoint?$params")
-        }
+    ): ExpectedResponse = httpClient().get {
+        val params = urlParams.joinToString("&") { "${it.first}=${it.second}" }
+        url("$scheme://$appHost/$apiPath/$endpoint?$params")
     }
 
     private suspend inline fun <reified ExpectedResponse, reified Body : Any> patchFromKtor(
@@ -72,21 +73,17 @@ internal object CandilibApi {
     ): ExpectedResponse {
         return httpClient().patch {
             url("$scheme://$appHost/$apiPath/$endpoint")
-            header("Content-Type", ContentType.Application.Json)
-            println("requestBody : $requestBody")
-            body = requestBody
-            println("body is set")
+            body = TextContent(Json.encodeToString(requestBody), ContentType.Application.Json)
         }
     }
 
-    private fun httpClient(): HttpClient {
-        return HttpClient {
-            val json = Json { ignoreUnknownKeys = true }
-            install(JsonFeature) { serializer = KotlinxSerializer(json) }
-            defaultRequest {
-                header("accept", "application/json")
-                header("Authorization", "Bearer $appJWTToken")
-            }
+    private fun httpClient() = HttpClient(httpClientEngine()) {
+        val json = Json { ignoreUnknownKeys = true }
+        install(JsonFeature) { serializer = KotlinxSerializer(json) }
+        defaultRequest {
+            header("accept", "application/json")
+            header("Authorization", "Bearer $appJWTToken")
         }
     }
 }
+

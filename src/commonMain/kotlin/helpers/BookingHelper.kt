@@ -6,13 +6,17 @@ import api.model.Centre
 import api.model.Place
 import constants.City
 import constants.PARIS_TIMEZONE
-import kotlinx.datetime.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import logging.logInFile
 
 internal object BookingHelper {
 
     suspend fun bookASlot(cities: List<City>, minDate: Instant): BookingResult? = cities
-        .map { findSlotsInPlace(it) }
+        .map { findSlotsInCity(it) }
         .flatten()
         .takeIf { it.isNotEmpty() }
         ?.also { slots -> logAvailableSlots(slots) }
@@ -28,12 +32,11 @@ internal object BookingHelper {
         logInFile(logLine)
     }
 
-    private suspend fun book(slot: Slot): BookingResult? = slot
-        .toPlace()
+    private suspend fun book(slot: Slot): BookingResult? = toPlace(slot)
         .let { CandilibApi.bookPlace(it) }
 
-    private suspend fun findSlotsInPlace(place: City): List<Slot> = CandilibApi.getCentres(place.dep)
-        ?.find { it.data.name == place.name }
+    private suspend fun findSlotsInCity(city: City): List<Slot> = CandilibApi.getCentres(city.dep)
+        ?.find { it.data.name == city.serverName }
         ?.takeIf { it.count > 0 }
         ?.let { findSlotsInCentre(it) }
         ?: emptyList()
@@ -41,11 +44,13 @@ internal object BookingHelper {
     private suspend fun findSlotsInCentre(centre: Centre): List<Slot>? = CandilibApi.getPlacesForCentre(centre.data.id)
         ?.map { toSlot(it, centre) }
 
-    private fun toSlot(dateString: String, centre: Centre) = Slot(
-        parse(dateString),
-        dateString,
-        centre.data.name,
-        centre.data.id
+    private fun toSlot(dateString: String, centre: Centre) = Slot(parse(dateString), centre.data.name)
+
+    private fun toPlace(slot: Slot) = Place(
+        slot.centreName,
+        slot.date.toString(),
+        isAccompanied = true,
+        hasDualControlCar = true
     )
 
     private fun parse(dateString: String): Instant = dateString
@@ -61,17 +66,5 @@ internal object BookingHelper {
         }
     }
 
-    private data class Slot(
-        val date: Instant,
-        val dateString: String, // We keep it to be able to send it back to the server without modifying it.
-        val centreName: String,
-        val centreId: String
-    ) {
-        fun toPlace() = Place(
-            centreId,
-            dateString,
-            isAccompanied = true,
-            hasDualControlCar = true
-        )
-    }
+    private data class Slot(val date: Instant, val centreName: String)
 }

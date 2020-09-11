@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Place(
-    @SerialName("id") val centreId: String,
+    @SerialName("nomCentre") val centreName: String,
     @SerialName("date") val dateString: String,
     val isAccompanied: Boolean,
     val hasDualControlCar: Boolean

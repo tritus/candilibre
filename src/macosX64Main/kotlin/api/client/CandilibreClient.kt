@@ -50,7 +50,7 @@ internal actual class CandilibreClient(
         vararg urlParams: Pair<String, String>
     ): ExpectedResponse = httpClient().get {
         val params = urlParams.joinToString("&") { "${it.first}=${it.second}" }
-        url("${scheme}://${appHost}/${apiPath}/$endpoint?$params")
+        url("$scheme://$appHost/$apiPath/$endpoint?$params")
     }
 
     private suspend inline fun <reified ExpectedResponse, reified Body : Any> patchFromKtor(
@@ -58,7 +58,7 @@ internal actual class CandilibreClient(
         requestBody: Body
     ): ExpectedResponse {
         return httpClient().patch {
-            url("${scheme}://${appHost}/${apiPath}/$endpoint")
+            url("$scheme://$appHost/$apiPath/$endpoint")
             body = TextContent(Json.encodeToString(requestBody), ContentType.Application.Json)
         }
     }
@@ -68,7 +68,7 @@ internal actual class CandilibreClient(
         install(JsonFeature) { serializer = KotlinxSerializer(json) }
         defaultRequest {
             header("accept", "application/json")
-            header("Authorization", "Bearer ${appJWTToken}")
+            header("Authorization", "Bearer $appJWTToken")
         }
     }
 }

@@ -15,14 +15,21 @@ import logging.logInFile
 
 internal object BookingHelper {
 
-    suspend fun bookASlot(cities: List<City>, minDate: Instant): BookingResult? = cities
+    suspend fun bookASlot(cities: List<City>, minDate: Instant): BookingResult? = City.values()
         .map { findSlotsInCity(it) }
         .flatten()
         .takeIf { it.isNotEmpty() }
         ?.also { slots -> logAvailableSlots(slots) }
-        ?.filter { it.date > minDate }
+        ?.filter { slot -> slot.centreName in cities.map { it.serverName } && slot.date > minDate }
         ?.minByOrNull { it.date }
         ?.let { book(it) }
+        .also { if (it == null) logFailed() }
+
+    private fun logFailed() {
+        val logLine = "${Clock.System.now()} : NO SLOTS AVAILABLE"
+        println(logLine)
+        logInFile(logLine)
+    }
 
     private fun logAvailableSlots(slots: List<Slot>) {
         val slotsList = slots

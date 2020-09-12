@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Centre(
-    val count: Int?,
-    @SerialName("centre") val data: CentreData?
+    val count: Int? = null,
+    @SerialName("centre") val data: CentreData? = null
 )

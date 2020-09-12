@@ -66,7 +66,13 @@ internal actual class CandilibreClient(
         val command =
             "curl -X PATCH \"$url\" -H \"accept: application/json\" -H \"Authorization: Bearer $appJWTToken\" -H \"Content-Type: application/json\" -d \"$body\""
         val result = executeCommand(command)
-        return Json { ignoreUnknownKeys = true }.decodeFromString(result)
+        return try {
+            Json { ignoreUnknownKeys = true }.decodeFromString(result)
+        } catch (e: Throwable) {
+            println("ERROR while decoding json $result")
+            throw e
+        }
+
     }
 
     private suspend fun executeCommand(command: String): String = coroutineScope {

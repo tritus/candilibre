@@ -28,6 +28,7 @@ fun main() {
 
         val result = BookingService().tryBooking(preferedCities, minDate)
         logSuccess(result)
+        logResult(result)
     }
 }
 
@@ -36,4 +37,10 @@ fun logSuccess(result: BookingResult) {
         "SUCCESS : booking taken on date ${result.reservation?.date} in centre ${result.reservation?.centre} (dep ${result.reservation?.departement})"
     println(successLog)
     logInFile(successLog)
+}
+
+fun logResult(result: BookingResult) {
+    val logline = "booking result : $result"
+    println(logline)
+    logInFile(logline)
 }

@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ReservationResult(
-    val date: String?,
-    val centre: String?,
-    val departement: String?,
-    val isBooked: Boolean?
+    val date: String? = null,
+    val centre: String? = null,
+    val departement: String? = null,
+    val isBooked: Boolean? = null
 )

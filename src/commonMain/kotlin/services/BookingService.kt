@@ -8,6 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toLocalDateTime
+import logging.logInFile
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -25,12 +26,19 @@ class BookingService {
         return if (result != null && result.success == true) {
             result
         } else {
+            if (result != null) logFailedResult(result)
             // Retry after some delay in case of failure
             val waitingTime = getWaitingTime()
             println("Retry in $waitingTime millisec")
             delay(waitingTime)
             tryBooking(cities, minDate)
         }
+    }
+
+    private fun logFailedResult(result: BookingResult) {
+        val logLine = "Got result but failed :(  $result"
+        println(logLine)
+        logInFile(logLine)
     }
 
     private fun getWaitingTime(): Long {

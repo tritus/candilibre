@@ -19,7 +19,7 @@ fun main() {
             City.NOISY_LE_GRAND,
             //City.ROSNY_SOUS_BOIS,
             //City.SAINT_CLOUD,
-            //City.SAINT_LEU_LA_FORET,
+            City.SAINT_LEU_LA_FORET,
             //City.VELIZY_VILLACOUBLAY
         )
 

@@ -10,7 +10,7 @@ internal object CandilibApi {
         scheme = "http",
         appHost = "localhost:8000",
         apiPath = "api/v2",
-        appJWTToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmNTc5M2FkOGJlODczNGQzMzJiYmY2NiIsImxldmVsIjowLCJpYXQiOjE1OTk1OTk4ODIsImV4cCI6MTU5OTg1OTA4Mn0.IyuVMGeDS08c15gusF8JeTdC4O8krwdSb_8Jf92N99E"
+        appJWTToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmNTc5M2FkOGJlODczNGQzMzJiYmY2NiIsImxldmVsIjowLCJpYXQiOjE1OTk5MzgxMzksImV4cCI6MTYwMDE5NzMzOX0.LmHzsntmJKsiPCQYNWz3zYRBM07nW9b6VLpibZRPewE"
     )
 
     // begin API endpoints

@@ -10,7 +10,7 @@ import services.BookingService
 
 fun main() {
     runBlocking {
-        val preferedCities = listOf(
+        val preferredCities = listOf(
             //City.BOBIGNY,
             //City.GENNEVILLIERS,
             City.MAISONS_ALFORT,
@@ -19,14 +19,14 @@ fun main() {
             City.NOISY_LE_GRAND,
             //City.ROSNY_SOUS_BOIS,
             //City.SAINT_CLOUD,
-            City.SAINT_LEU_LA_FORET,
+            //City.SAINT_LEU_LA_FORET,
             //City.VELIZY_VILLACOUBLAY
         )
 
         val minDate = LocalDateTime(2020, 9, 27, 0, 0, 0, 0).toInstant(PARIS_TIMEZONE)
 
 
-        val result = BookingService().tryBooking(preferedCities, minDate)
+        val result = BookingService().tryBooking(preferredCities, minDate)
         logSuccess(result)
         logResult(result)
     }

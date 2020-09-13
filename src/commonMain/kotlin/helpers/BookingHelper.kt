@@ -59,12 +59,13 @@ internal object BookingHelper {
 
     private fun toSlot(dateString: String, centre: Centre) = Slot(
         parse(dateString),
+        dateString,
         requireNotNull(centre.data?.name) { "centre name must not be null to be able to book a slot" }
     )
 
     private fun toPlace(slot: Slot) = Place(
         slot.centreName,
-        slot.date.toString(),
+        slot.serverDate,
         isAccompanied = true,
         hasDualControlCar = true
     )
@@ -74,13 +75,7 @@ internal object BookingHelper {
         .toLocalDateTime()
         .toInstant(timeZoneOf(dateString))
 
-    private fun timeZoneOf(dateString: String): TimeZone = when (dateString.takeLast(6)) {
-        "+01:00" -> PARIS_TIMEZONE
-        else -> {
-            println("Error while parsing timezone of date $dateString, falling back on UTC")
-            TimeZone.UTC
-        }
-    }
+    private fun timeZoneOf(dateString: String): TimeZone = TimeZone.of(dateString.takeLast(6))
 
-    private data class Slot(val date: Instant, val centreName: String)
+    private data class Slot(val date: Instant, val serverDate: String, val centreName: String)
 }

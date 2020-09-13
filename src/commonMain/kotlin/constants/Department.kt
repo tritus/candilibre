@@ -6,5 +6,6 @@ enum class Department(val serverName: String) {
     D_93("93"),
     D_94("94"),
     D_95("95"),
+    D_77("77"),
     D_78("78")
 }

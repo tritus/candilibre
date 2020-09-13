@@ -20,7 +20,8 @@ fun main() {
             //City.ROSNY_SOUS_BOIS,
             //City.SAINT_CLOUD,
             //City.SAINT_LEU_LA_FORET,
-            //City.VELIZY_VILLACOUBLAY
+            //City.VELIZY_VILLACOUBLAY,
+            City.LAGNY_SUR_MARNE
         )
 
         val minDate = LocalDateTime(2020, 9, 27, 0, 0, 0, 0).toInstant(PARIS_TIMEZONE)

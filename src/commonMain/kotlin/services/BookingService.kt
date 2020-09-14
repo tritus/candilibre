@@ -15,7 +15,7 @@ import kotlin.random.Random
 class BookingService {
     private val randomNumberGenerator = Random(Clock.System.now().hashCode())
 
-    private val minutesRangeAroundMidday = 5L
+    private val minutesRangeAroundMidday = 7L
     private val millisecondsStepDuringRushHour = 1000L // 1sec
     private val millisecondsStepDuringLazyHour = 300000L // 5min
     private val millisecondsRandomDeltaDuringRushHour = 100L // 1/10sec

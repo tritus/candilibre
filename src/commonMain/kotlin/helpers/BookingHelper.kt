@@ -9,6 +9,7 @@ import constants.Department
 import constants.PARIS_TIMEZONE
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -41,13 +42,16 @@ internal object BookingHelper {
 
     private suspend fun bookAnAvailableSlot(slotList: List<Slot>): BookingResult? {
         slotList
-            .sortedBy { it.date }
+            .shuffled()
+            .sortedBy { localDateOf(it) }
             .forEach { slot ->
                 val result = bookASlot(slot)
                 if (result?.success == true) return result
             }
         return null
     }
+
+    private fun localDateOf(slot: Slot): LocalDate = slot.date.toLocalDateTime(PARIS_TIMEZONE).date
 
     private suspend fun bookASlot(slot: Slot): BookingResult? = toPlace(slot).let { CandilibApi.bookPlace(it) }
 

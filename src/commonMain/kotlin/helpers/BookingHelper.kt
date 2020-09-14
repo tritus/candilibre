@@ -22,8 +22,7 @@ internal object BookingHelper {
         .takeIf { it.isNotEmpty() }
         ?.also { slots -> logAvailableSlots(slots) }
         ?.filter { slot -> slot.centreName in cities.map { it.serverName } && slot.date > minDate }
-        ?.minByOrNull { it.date }
-        ?.let { book(it) }
+        ?.let { bookAnAvailableSlot(it) }
         .also { if (it == null) logFailed() }
 
     private fun logFailed() {
@@ -40,8 +39,17 @@ internal object BookingHelper {
         logInFile(logLine)
     }
 
-    private suspend fun book(slot: Slot): BookingResult? = toPlace(slot)
-        .let { CandilibApi.bookPlace(it) }
+    private suspend fun bookAnAvailableSlot(slotList: List<Slot>): BookingResult? {
+        slotList
+            .sortedBy { it.date }
+            .forEach { slot ->
+                val result = bookASlot(slot)
+                if (result?.success == true) return result
+            }
+        return null
+    }
+
+    private suspend fun bookASlot(slot: Slot): BookingResult? = toPlace(slot).let { CandilibApi.bookPlace(it) }
 
     private suspend fun findSlotsInDep(department: Department): List<Slot> = CandilibApi
         .getCentres(department.serverName)

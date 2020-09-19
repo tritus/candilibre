@@ -11,7 +11,31 @@ repositories {
     maven { url = "https://kotlin.bintray.com/kotlinx/" }
 }
 kotlin {
-    macosX64 {
+    /*macosX64 {
+        compilations.main.cinterops {
+            curl
+        }
+
+        binaries {
+            executable()
+        }
+    }
+
+    mingwX64 {
+        compilations.main.cinterops {
+            curl
+        }
+
+        binaries {
+            executable()
+        }
+    }*/
+
+    linuxX64 {
+        /*compilations.main.cinterops {
+            curl
+        }*/
+
         binaries {
             executable()
         }

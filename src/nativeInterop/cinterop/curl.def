@@ -1,3 +1,0 @@
-headers = curl.h
-staticLibraries = libcurl.a
-libraryPaths = ~/Dev/candilibre/src/nativeInterop/cinterop/curl

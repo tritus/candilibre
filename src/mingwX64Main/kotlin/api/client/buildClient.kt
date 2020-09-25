@@ -5,6 +5,4 @@ internal actual fun buildClient(
     appHost: String,
     apiPath: String,
     appJWTToken: String
-): CandilibreClient {
-    TODO("Not yet implemented")
-}
+) = CandilibreClient(scheme, appHost, apiPath, appJWTToken)

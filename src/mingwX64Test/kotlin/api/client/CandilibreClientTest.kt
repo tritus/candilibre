@@ -2,6 +2,7 @@ package api.client
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
+import logging.Logger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

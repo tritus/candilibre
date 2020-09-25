@@ -4,11 +4,12 @@ import api.model.BookingResult
 import constants.City
 import constants.PARIS_TIMEZONE
 import helpers.BookingHelper
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toLocalDateTime
-import logging.logInFile
+import logging.Logger
+import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -21,24 +22,24 @@ class BookingService {
     private val millisecondsRandomDeltaDuringRushHour = 100L // 1/10sec
     private val millisecondsRandomDeltaDuringLazyHour = 60000L // 1min
 
-    suspend fun tryBooking(cities: List<City>, minDate: Instant): BookingResult {
-        val result = BookingHelper.bookASlot(cities, minDate)
+    suspend fun tryBooking(logger: Logger, token: String, cities: List<City>, minDate: Instant): BookingResult {
+        coroutineContext.ensureActive()
+        val result = BookingHelper.bookASlot(logger, token, cities, minDate)
         return if (result != null && result.success == true) {
             result
         } else {
-            if (result != null) logFailedResult(result)
+            if (result != null) logger.logFailedResult(result)
             // Retry after some delay in case of failure
             val waitingTime = getWaitingTime()
-            println("Retry in $waitingTime millisec")
+            logger.log("Nouvel essai dans ${waitingTime / 1000f} secondes")
             delay(waitingTime)
-            tryBooking(cities, minDate)
+            tryBooking(logger, token, cities, minDate)
         }
     }
 
-    private fun logFailedResult(result: BookingResult) {
-        val logLine = "Got result but failed :(  $result"
-        println(logLine)
-        logInFile(logLine)
+    private fun Logger.logFailedResult(result: BookingResult) {
+        val logLine = "Echec de la réservation :(\nréponse de Candilib : $result"
+        log(logLine)
     }
 
     private fun getWaitingTime(): Long {

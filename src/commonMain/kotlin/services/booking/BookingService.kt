@@ -1,18 +1,20 @@
-package services
+package services.booking
 
-import api.model.BookingResult
 import constants.City
 import constants.PARIS_TIMEZONE
-import helpers.BookingHelper
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toLocalDateTime
 import logging.Logger
+import services.api.model.BookingResult
+import services.booking.helpers.BookingHelper
 import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 import kotlin.random.Random
 
+// Needs to be a class because randomNumberGenerator needs to be retained by a class (and not be top level and frozen)
 class BookingService {
     private val randomNumberGenerator = Random(Clock.System.now().hashCode())
 
@@ -22,7 +24,13 @@ class BookingService {
     private val millisecondsRandomDeltaDuringRushHour = 100L // 1/10sec
     private val millisecondsRandomDeltaDuringLazyHour = 60000L // 1min
 
-    suspend fun tryBooking(logger: Logger, token: String, cities: List<City>, minDate: Instant): BookingResult {
+    suspend fun tryBooking(
+        logger: Logger,
+        token: String,
+        userId: String,
+        cities: List<City>,
+        minDate: Instant
+    ): BookingResult {
         coroutineContext.ensureActive()
         val result = BookingHelper.bookASlot(logger, token, cities, minDate)
         return if (result != null && result.success == true) {
@@ -33,7 +41,7 @@ class BookingService {
             val waitingTime = getWaitingTime()
             logger.log("Nouvel essai dans ${waitingTime / 1000f} secondes")
             delay(waitingTime)
-            tryBooking(logger, token, cities, minDate)
+            tryBooking(logger, token, userId, cities, minDate)
         }
     }
 

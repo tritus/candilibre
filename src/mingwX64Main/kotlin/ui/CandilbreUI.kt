@@ -3,6 +3,7 @@ package ui
 import constants.City
 import constants.PARIS_TIMEZONE
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.datetime.Instant
@@ -10,12 +11,12 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
 import libui.ktx.*
 import logging.Logger
-import kotlin.native.concurrent.freeze
 
 
 class CandilbreUI {
     private val logSeparator = "\n\n"
 
+    @ExperimentalCoroutinesApi
     fun show(
         onStartClicked: (String, List<City>, Instant) -> Unit,
         logger: Logger

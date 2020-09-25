@@ -1,13 +1,18 @@
-package api.client
+package services.api.client
 
-internal expect class CandilibreClient {
+internal expect class HttpClient {
     suspend inline fun <reified ExpectedResponse> get(
         endpoint: String,
         vararg urlParams: Pair<String, String>
-    ): ExpectedResponse
+    ): Response<ExpectedResponse>
 
     suspend inline fun <reified ExpectedResponse, reified Body : Any> patch(
         endpoint: String,
         requestBody: Body
-    ): ExpectedResponse
+    ): Response<ExpectedResponse>
 }
+
+data class Response<ExpectedType>(
+    val headers: Map<String, String>,
+    val body: ExpectedType
+)

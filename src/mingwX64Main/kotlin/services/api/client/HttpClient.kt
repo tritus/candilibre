@@ -1,4 +1,4 @@
-package api.client
+package services.api.client
 
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -9,7 +9,7 @@ import wininet.WinINetHelper
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 
-internal actual class CandilibreClient(
+internal actual class HttpClient(
     private val scheme: String,
     private val appHost: String,
     private val apiPath: String,
@@ -18,7 +18,7 @@ internal actual class CandilibreClient(
     actual suspend inline fun <reified ExpectedResponse> get(
         endpoint: String,
         vararg urlParams: Pair<String, String>
-    ): ExpectedResponse {
+    ): Response<ExpectedResponse> {
         coroutineContext.ensureActive()
         val params = urlParams.joinToString("&") { "${it.first}=${it.second}" }
         val path = listOf(appHost, apiPath, endpoint).filter { it.isNotEmpty() }.joinToString("/")
@@ -27,27 +27,24 @@ internal actual class CandilibreClient(
         return getRaw(url).let(::decode)
     }
 
-    private suspend fun getRaw(url: String): String = suspendCancellableCoroutine { continuation ->
+    private suspend fun getRaw(url: String): Response<String> {
         val headers = mapOf(
             "Authorization" to "Bearer $appJWTToken"
         )
-        try {
-            WinINetHelper.request(url, "GET", headers, null) { code, body ->
-                when (code) {
-                    200 -> continuation.resume(body.decodeToString())
-                    401 -> continuation.cancel(CandilibreClientBadTokenException(appJWTToken))
-                    else -> continuation.cancel(CandilibreClientBadResponseException(code, url, body.decodeToString()))
-                }
-            }
-        } catch (e: Throwable) {
-            continuation.cancel(CandilibreClientBadRequestException(url, e))
-        }
+        return wininetCall(url, "GET", headers, null)
     }
+
+    private fun decodeHeaders(headers: ByteArray): Map<String, String> = headers
+        .decodeToString()
+        .split("\n")
+        .map { it.split(": ") }
+        .map { it[0] to it[1] }
+        .toMap()
 
     actual suspend inline fun <reified ExpectedResponse, reified Body : Any> patch(
         endpoint: String,
         requestBody: Body
-    ): ExpectedResponse {
+    ): Response<ExpectedResponse> {
         coroutineContext.ensureActive()
         val path = listOf(appHost, apiPath, endpoint).filter { it.isNotEmpty() }.joinToString("/")
         val url = "$scheme://$path"
@@ -55,15 +52,24 @@ internal actual class CandilibreClient(
         return patchRaw(url, body).let(::decode)
     }
 
-    private suspend fun patchRaw(url: String, postData: String): String = suspendCancellableCoroutine { continuation ->
+    private suspend fun patchRaw(url: String, postData: String): Response<String> {
         val headers = mapOf(
             "Content-type" to "application/json",
             "Authorization" to "Bearer $appJWTToken"
         )
+        return wininetCall(url, "PATCH", headers, postData)
+    }
+
+    private suspend fun wininetCall(
+        url: String,
+        method: String,
+        headers: Map<String, String>,
+        postData: String?
+    ): Response<String> = suspendCancellableCoroutine { continuation ->
         try {
-            WinINetHelper.request(url, "PATCH", headers, postData.encodeToByteArray()) { code, body ->
+            WinINetHelper.request(url, method, headers, postData?.encodeToByteArray()) { code, headers, body ->
                 when (code) {
-                    200 -> continuation.resume(body.decodeToString())
+                    200 -> continuation.resume(Response(decodeHeaders(headers), body.decodeToString()))
                     401 -> continuation.cancel(CandilibreClientBadTokenException(appJWTToken))
                     else -> continuation.cancel(CandilibreClientBadResponseException(code, url, body.decodeToString()))
                 }
@@ -73,8 +79,10 @@ internal actual class CandilibreClient(
         }
     }
 
-    private inline fun <reified ExpectedResponse> decode(it: String): ExpectedResponse =
-        Json { ignoreUnknownKeys = true }.decodeFromString(it)
+    private inline fun <reified ExpectedResponse> decode(it: Response<String>): Response<ExpectedResponse> = Response(
+        it.headers,
+        Json { ignoreUnknownKeys = true }.decodeFromString(it.body)
+    )
 
 }
 

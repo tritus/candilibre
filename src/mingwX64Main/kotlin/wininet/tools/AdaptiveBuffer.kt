@@ -1,4 +1,4 @@
-package tools
+package wininet.tools
 
 /**
  * AdaptiveBuffer is inspired by JetBrains' implementation of

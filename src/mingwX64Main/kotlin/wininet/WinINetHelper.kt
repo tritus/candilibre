@@ -1,8 +1,7 @@
 package wininet
 
-import tools.AdaptiveBuffer
+import wininet.tools.AdaptiveBuffer
 import kotlinx.cinterop.*
-import platform.posix.BUFSIZ
 import platform.windows.*
 import kotlin.native.internal.NativePtr
 
@@ -149,6 +148,42 @@ object WinINetHelper {
         return data.value.toInt()
     }
 
+    /**
+     * Read response headers
+     */
+    private fun MemScope.getResponseHeaders(requestHandle: RequestHandle): ByteArray {
+        val dataSize = alloc<DWORDVar>()
+        dataSize.value = 0u
+
+        if (HttpQueryInfoW(
+                requestHandle.handle,
+                HTTP_QUERY_RAW_HEADERS_CRLF.dword(),
+                null,
+                dataSize.ptr,
+                null
+            ) == 0
+        ) {
+            if (GetLastError() == ERROR_INSUFFICIENT_BUFFER.toUInt()) {
+                // There are headers so we allocate a ByteArray of proper size to read it.
+                val data = ByteArray(dataSize.value.toInt())
+                data.usePinned {
+                    HttpQueryInfoW(
+                        requestHandle.handle,
+                        HTTP_QUERY_RAW_HEADERS_CRLF.dword(),
+                        it.addressOf(0),
+                        dataSize.ptr,
+                        null
+                    )
+                }
+                return data
+            } else {
+                error("HTTP headers cannot be read: ${GetLastError()}")
+            }
+        } else {
+            // There was no header
+            return ByteArray(0)
+        }
+    }
 
     /**
      * Read the whole response data.
@@ -189,7 +224,7 @@ object WinINetHelper {
         method: String,
         headers: Map<String, String>,
         postData: ByteArray?,
-        callback: (responseCode: Int, responseData: ByteArray) -> T
+        callback: (responseCode: Int, responseHeaders: ByteArray, responseData: ByteArray) -> T
     ): T {
 
         // Parse URL to get domain, port and path.
@@ -225,10 +260,12 @@ object WinINetHelper {
 
                 // Read response code and data.
                 val responseCode = getResponseCode(requestHandle)
+                val responseHeaders = getResponseHeaders(requestHandle)
                 val responseData = getResponseData(requestHandle)
 
                 Response(
                     code = responseCode,
+                    headers = responseHeaders,
                     data = responseData
                 )
             } finally {
@@ -240,7 +277,7 @@ object WinINetHelper {
         }
 
         // Invoke callback for the received data.
-        return callback(response.code, response.data)
+        return callback(response.code, response.headers, response.data)
     }
 
 }

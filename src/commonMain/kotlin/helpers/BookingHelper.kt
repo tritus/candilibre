@@ -7,45 +7,39 @@ import api.model.Place
 import constants.City
 import constants.Department
 import constants.PARIS_TIMEZONE
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
-import logging.logInFile
+import kotlinx.datetime.*
+import logging.Logger
 
 internal object BookingHelper {
 
-    suspend fun bookASlot(cities: List<City>, minDate: Instant): BookingResult? = Department.values()
-        .map { findSlotsInDep(it) }
-        .flatten()
-        .takeIf { it.isNotEmpty() }
-        ?.also { slots -> logAvailableSlots(slots) }
-        ?.filter { slot -> slot.centreName in cities.map { it.serverName } && slot.date > minDate }
-        ?.let { bookAnAvailableSlot(it) }
-        .also { if (it == null) logFailed() }
+    suspend fun bookASlot(logger: Logger, token: String, cities: List<City>, minDate: Instant): BookingResult? =
+        Department.values()
+            .map { findSlotsInDep(token, it) }
+            .flatten()
+            .takeIf { it.isNotEmpty() }
+            ?.also { slots -> logger.logAvailableSlots(slots) }
+            ?.filter { slot -> slot.centreName in cities.map { it.serverName } && slot.date > minDate }
+            ?.let { bookAnAvailableSlot(token, it) }
+            .also { if (it == null) logger.logFailed() }
 
-    private fun logFailed() {
-        val logLine = "${Clock.System.now()} : NO SLOTS AVAILABLE"
-        println(logLine)
-        logInFile(logLine)
+    private fun Logger.logFailed() {
+        val logLine = "${Clock.System.now()} : Pas de places disponibles pour le moment"
+        log(logLine)
     }
 
-    private fun logAvailableSlots(slots: List<Slot>) {
+    private fun Logger.logAvailableSlots(slots: List<Slot>) {
         val slotsList = slots
             .joinToString("\n") { "${it.date.toLocalDateTime(PARIS_TIMEZONE)} in ${it.centreName}" }
-        val logLine = "${Clock.System.now()} : SLOTS AVAILABLE [\n$slotsList\n]"
-        println(logLine)
-        logInFile(logLine)
+        val logLine = "${Clock.System.now()} : Des places sont disponibles : [\n$slotsList\n]"
+        log(logLine)
     }
 
-    private suspend fun bookAnAvailableSlot(slotList: List<Slot>): BookingResult? {
+    private suspend fun bookAnAvailableSlot(token: String, slotList: List<Slot>): BookingResult? {
         slotList
             .shuffled()
             .sortedBy { localDateOf(it) }
             .forEach { slot ->
-                val result = bookASlot(slot)
+                val result = bookASlot(token, slot)
                 if (result?.success == true) return result
             }
         return null
@@ -53,21 +47,21 @@ internal object BookingHelper {
 
     private fun localDateOf(slot: Slot): LocalDate = slot.date.toLocalDateTime(PARIS_TIMEZONE).date
 
-    private suspend fun bookASlot(slot: Slot): BookingResult? = toPlace(slot).let { CandilibApi.bookPlace(it) }
+    private suspend fun bookASlot(token: String, slot: Slot): BookingResult? = toPlace(slot)
+        .let { CandilibApi.bookPlace(token, it) }
 
-    private suspend fun findSlotsInDep(department: Department): List<Slot> = CandilibApi
-        .getCentres(department.serverName)
-        ?.filter { it.count != null && it.count > 0 }
-        ?.map { findSlotsInCentre(it) }
-        ?.flatten()
-        ?: emptyList()
+    private suspend fun findSlotsInDep(token: String, department: Department): List<Slot> =
+        CandilibApi
+            .getCentres(token, department.serverName)
+            .filter { it.count != null && it.count > 0 }
+            .map { findSlotsInCentre(token, it) }
+            .flatten()
 
-    private suspend fun findSlotsInCentre(centre: Centre): List<Slot> = requireNotNull(
+    private suspend fun findSlotsInCentre(token: String, centre: Centre): List<Slot> = requireNotNull(
         centre.data?.id
     ) { "centre id is required to look for places in the centre" }
-        .let { CandilibApi.getPlacesForCentre(it) }
-        ?.map { toSlot(it, centre) }
-        ?: emptyList()
+        .let { CandilibApi.getPlacesForCentre(token, it) }
+        .map { toSlot(it, centre) }
 
     private fun toSlot(dateString: String, centre: Centre) = Slot(
         parse(dateString),

@@ -4,23 +4,22 @@ import api.client.buildClient
 import api.model.BookingResult
 import api.model.Centre
 import api.model.Place
+import logging.Logger
 
 internal object CandilibApi {
-    private val httpClient = buildClient(
-        scheme = "http",
-        appHost = "localhost:8000",
+    private fun httpClient(token: String) = buildClient(
+        scheme = "https",
+        appHost = "beta.interieur.gouv.fr/candilib",
         apiPath = "api/v2",
-        appJWTToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmNTc5M2FkOGJlODczNGQzMzJiYmY2NiIsImxldmVsIjowLCJpYXQiOjE1OTk5MzgxMzksImV4cCI6MTYwMDE5NzMzOX0.LmHzsntmJKsiPCQYNWz3zYRBM07nW9b6VLpibZRPewE"
+        appJWTToken = token
     )
 
-    // begin API endpoints
+    suspend fun getCentres(token: String, depNumber: String): List<Centre> =
+        httpClient(token).get("candidat/centres", "departement" to depNumber)
 
-    suspend fun getCentres(depNumber: String): List<Centre>? =
-        httpClient.get("candidat/centres", "departement" to depNumber)
+    suspend fun getPlacesForCentre(token: String, centreId: String): List<String> =
+        httpClient(token).get("candidat/places/$centreId")
 
-    suspend fun getPlacesForCentre(centreId: String): List<String>? = httpClient.get("candidat/places/$centreId")
-
-    suspend fun bookPlace(place: Place): BookingResult? = httpClient.patch("candidat/places", place)
-
-    // end API endpoints
+    suspend fun bookPlace(token: String, place: Place): BookingResult =
+        httpClient(token).patch("candidat/places", place)
 }

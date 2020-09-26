@@ -29,6 +29,8 @@ fun main() {
                     logBadToken(logger)
                 } catch (e: UnknownTokenFormatException) {
                     logBadToken(logger)
+                } catch (e: Throwable) {
+                    logger.log("Oups, une erreur inconnue est arrivée : $e")
                 }
             }
         },

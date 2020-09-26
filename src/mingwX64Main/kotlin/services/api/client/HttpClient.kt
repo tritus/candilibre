@@ -31,7 +31,7 @@ internal actual class HttpClient(
     private suspend fun getRaw(url: String): String {
         val headers = mapOf(
             "Authorization" to "Bearer $appJWTToken",
-            "X_USER_ID" to UserService.getUserId(appJWTToken)
+            "X-USER-ID" to UserService.getUserId(appJWTToken)
         )
         return wininetCall(url, "GET", headers, null)
     }
@@ -44,14 +44,14 @@ internal actual class HttpClient(
         val path = listOf(appHost, apiPath, endpoint).filter { it.isNotEmpty() }.joinToString("/")
         val url = "$scheme://$path"
         val body = Json { ignoreUnknownKeys = true }.encodeToString(requestBody)
-        return "TODO".let(::decode)//patchRaw(url, body).let(::decode)
+        return patchRaw(url, body).let(::decode)
     }
 
     private suspend fun patchRaw(url: String, postData: String): String {
         val headers = mapOf(
             "Content-type" to "application/json",
             "Authorization" to "Bearer $appJWTToken",
-            "X_USER_ID" to UserService.getUserId(appJWTToken)
+            "X-USER-ID" to UserService.getUserId(appJWTToken)
         )
         return wininetCall(url, "PATCH", headers, postData)
     }

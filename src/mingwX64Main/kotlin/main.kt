@@ -2,10 +2,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import logging.Logger
 import logging.buildLogger
 import services.api.client.CandilibreClientBadTokenException
 import services.booking.BookingService
 import services.user.UserService
+import services.user.errors.UnknownTokenFormatException
 import ui.CandilbreUI
 
 @ExperimentalCoroutinesApi
@@ -24,11 +26,17 @@ fun main() {
                 try {
                     BookingService().tryBooking(logger, token, cities, minDate)
                 } catch (e: CandilibreClientBadTokenException) {
-                    logger.log("Votre lien Candilib est expiré ou n'a pas été correctement copié.")
+                    logBadToken(logger)
+                } catch (e: UnknownTokenFormatException) {
+                    logBadToken(logger)
                 }
             }
         },
         logger
     )
     runningJob?.cancel()
+}
+
+private fun logBadToken(logger: Logger) {
+    logger.log("Votre lien Candilib est expiré ou n'a pas été correctement copié.")
 }

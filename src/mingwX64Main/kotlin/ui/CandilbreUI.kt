@@ -63,6 +63,7 @@ class CandilbreUI {
                 button("Commencer à chercher") {
                     action {
                         val token = emailLink.value
+                            .trim()
                             .split("https://beta.interieur.gouv.fr/candilib/candidat?token=")
                             .firstOrNull { it.isNotBlank() }
                         val cities = cityCheckBoxes

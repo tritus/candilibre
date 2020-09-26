@@ -1,6 +1,5 @@
 package services.api
 
-import services.api.client.Response
 import services.api.client.buildClient
 import services.api.model.BookingResult
 import services.api.model.Centre
@@ -15,15 +14,12 @@ internal object CandilibApi {
         appJWTToken = token
     )
 
-    suspend fun getCentres(token: String, depNumber: String): Response<List<Centre>> =
+    suspend fun getCentres(token: String, depNumber: String): List<Centre> =
         httpClient(token).get("candidat/centres", "departement" to depNumber)
 
-    suspend fun getPlacesForCentre(token: String, centreId: String): Response<List<String>> =
+    suspend fun getPlacesForCentre(token: String, centreId: String): List<String> =
         httpClient(token).get("candidat/places/$centreId")
 
-    suspend fun bookPlace(token: String, place: Place): Response<BookingResult> =
+    suspend fun bookPlace(token: String, place: Place): BookingResult =
         httpClient(token).patch("candidat/places", place)
-
-    suspend fun verifyToken(token: String): Response<VerificationResult> =
-        httpClient(token).get("candidat/verify-token")
 }

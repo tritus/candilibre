@@ -49,10 +49,9 @@ internal object BookingHelper {
 
     private suspend fun bookASlot(token: String, slot: Slot): BookingResult? = toPlace(slot)
         .let { CandilibApi.bookPlace(token, it) }
-        .body
 
     private suspend fun findSlotsInDep(token: String, department: Department): List<Slot> =
-        CandilibApi.getCentres(token, department.serverName).body
+        CandilibApi.getCentres(token, department.serverName)
             .filter { it.count != null && it.count > 0 }
             .map { findSlotsInCentre(token, it) }
             .flatten()
@@ -60,7 +59,7 @@ internal object BookingHelper {
     private suspend fun findSlotsInCentre(token: String, centre: Centre): List<Slot> = requireNotNull(
         centre.data?.id
     ) { "centre id is required to look for places in the centre" }
-        .let { CandilibApi.getPlacesForCentre(token, it).body }
+        .let { CandilibApi.getPlacesForCentre(token, it) }
         .map { toSlot(it, centre) }
 
     private fun toSlot(dateString: String, centre: Centre) = Slot(

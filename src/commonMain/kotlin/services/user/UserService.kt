@@ -1,12 +1,16 @@
 package services.user
 
-import services.api.CandilibApi
-import services.user.errors.MissingUserIdInServerResponseException
+import services.user.errors.UnknownTokenFormatException
+import tools.Base64.base64decoded
 
-internal object UserService {
-    suspend fun getUserId(token: String): String {
-        val verificationResult = CandilibApi.verifyToken(token)
-        return verificationResult.headers["X_USER_ID"]
-            ?: throw MissingUserIdInServerResponseException("The user id was not found in the server response")
+object UserService {
+    fun getUserId(token: String): String {
+        val decodedToken = token.base64decoded
+        return Regex("\"id\":\"([^\"]*)\"")
+            .find(decodedToken)
+            ?.groups
+            ?.get(1)
+            ?.value
+            ?: throw UnknownTokenFormatException(token, decodedToken)
     }
 }

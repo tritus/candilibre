@@ -22,8 +22,7 @@ fun main() {
             logger.log("Début de la recherche avec les parametres suivants :\n  token : $token,\n  date minimum : $minDate\n  villes : $cities")
             runningJob = GlobalScope.launch {
                 try {
-                    val userId = UserService.getUserId(token)
-                    BookingService().tryBooking(logger, token, userId, cities, minDate)
+                    BookingService().tryBooking(logger, token, cities, minDate)
                 } catch (e: CandilibreClientBadTokenException) {
                     logger.log("Votre lien Candilib est expiré ou n'a pas été correctement copié.")
                 }

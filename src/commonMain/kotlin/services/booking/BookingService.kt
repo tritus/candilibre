@@ -27,7 +27,6 @@ class BookingService {
     suspend fun tryBooking(
         logger: Logger,
         token: String,
-        userId: String,
         cities: List<City>,
         minDate: Instant
     ): BookingResult {
@@ -41,7 +40,7 @@ class BookingService {
             val waitingTime = getWaitingTime()
             logger.log("Nouvel essai dans ${waitingTime / 1000f} secondes")
             delay(waitingTime)
-            tryBooking(logger, token, userId, cities, minDate)
+            tryBooking(logger, token, cities, minDate)
         }
     }
 

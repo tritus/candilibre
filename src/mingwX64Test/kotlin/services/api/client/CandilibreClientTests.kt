@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class CandilibreClientTest {
+class CandilibreClientTests {
     @Test
     fun testGet() {
         runBlocking {
@@ -19,9 +19,7 @@ class CandilibreClientTest {
                     false
                 )
             )
-            val expectedContentTypeHeader = "application/json"
-            assertEquals(expected, response.body)
-            assertEquals(expectedContentTypeHeader, response.headers["Content-Type"])
+            assertEquals(expected, response)
         }
     }
 

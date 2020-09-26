@@ -1,34 +1,6 @@
 package tools
 
 internal object Base64 {
-    private const val BASE64_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-    private val RX_BASE64_CLEANR = "[^="+BASE64_SET+"]".toRegex()
-
-    /**
-     * Base64 encode a string.
-     */
-    val String.base64encoded: String get() {
-        val pad  = when (this.length % 3) {
-            1 -> "=="
-            2 -> "="
-            else -> ""
-        }
-        var raw = this
-        (1 .. pad.length).forEach { raw += 0.toChar() }
-        return StringBuilder().apply {
-            (0 until raw.length step 3).forEach {
-                val n: Int = (0xFF.and(raw[ it ].toInt()) shl 16) +
-                        (0xFF.and(raw[it+1].toInt()) shl  8) +
-                        0xFF.and(raw[it+2].toInt())
-                listOf<Int>( (n shr 18) and 0x3F,
-                    (n shr 12) and 0x3F,
-                    (n shr  6) and 0x3F,
-                    n      and 0x3F).forEach { append(BASE64_SET[it]) }
-            }
-        }   .dropLast(pad.length)
-            .toString() + pad
-    }
-
     /**
      * Decode a Base64 string.
      */
@@ -38,6 +10,7 @@ internal object Base64 {
 
     /**
      * Decode a Base64 ByteArray.
+     * Credits to https://github.com/jershell/kbase64/blob/master/src/commonMain/kotlin/com/github/jershell/kbase64/decodeBase64.kt
      */
     val ByteArray.base64decoded: ByteArray get() {
         val table = intArrayOf(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

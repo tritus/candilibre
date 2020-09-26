@@ -1,14 +1,14 @@
-package helpers
+package services.booking.helpers
 
-import api.CandilibApi
-import api.model.BookingResult
-import api.model.Centre
-import api.model.Place
 import constants.City
 import constants.Department
 import constants.PARIS_TIMEZONE
 import kotlinx.datetime.*
 import logging.Logger
+import services.api.CandilibApi
+import services.api.model.BookingResult
+import services.api.model.Centre
+import services.api.model.Place
 
 internal object BookingHelper {
 
@@ -51,8 +51,7 @@ internal object BookingHelper {
         .let { CandilibApi.bookPlace(token, it) }
 
     private suspend fun findSlotsInDep(token: String, department: Department): List<Slot> =
-        CandilibApi
-            .getCentres(token, department.serverName)
+        CandilibApi.getCentres(token, department.serverName)
             .filter { it.count != null && it.count > 0 }
             .map { findSlotsInCentre(token, it) }
             .flatten()

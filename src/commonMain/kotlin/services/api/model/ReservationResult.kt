@@ -1,4 +1,4 @@
-package api.model
+package services.api.model
 
 import kotlinx.serialization.Serializable
 

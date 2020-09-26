@@ -1,10 +1,9 @@
-package api
+package services.api
 
-import api.client.buildClient
-import api.model.BookingResult
-import api.model.Centre
-import api.model.Place
-import logging.Logger
+import services.api.client.buildClient
+import services.api.model.BookingResult
+import services.api.model.Centre
+import services.api.model.Place
 
 internal object CandilibApi {
     private fun httpClient(token: String) = buildClient(

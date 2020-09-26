@@ -1,4 +1,4 @@
-package api.client
+package services.api.client
 
 import kotlinx.coroutines.*
 import kotlin.coroutines.resume

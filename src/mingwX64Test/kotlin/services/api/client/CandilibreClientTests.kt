@@ -1,16 +1,15 @@
-package api.client
+package services.api.client
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import logging.Logger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class CandilibreClientTest {
+class CandilibreClientTests {
     @Test
     fun testGet() {
         runBlocking {
-            val client = CandilibreClient("https", "jsonplaceholder.typicode.com", "", "testToken")
+            val client = HttpClient("https", "jsonplaceholder.typicode.com", "", "testToken")
             val response = client.get<List<TodoTestObject>>("todos", "id" to "1")
             val expected = listOf(
                 TodoTestObject(
@@ -27,7 +26,7 @@ class CandilibreClientTest {
     @Test
     fun testPatch() {
         runBlocking {
-            val client = CandilibreClient("https", "jsonplaceholder.typicode.com", "", "testToken")
+            val client = HttpClient("https", "jsonplaceholder.typicode.com", "", "testToken")
             val body = TodoTestObject(
                 1,
                 1,

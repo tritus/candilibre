@@ -1,18 +1,20 @@
-package services
+package services.booking
 
-import api.model.BookingResult
 import constants.City
 import constants.PARIS_TIMEZONE
-import helpers.BookingHelper
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toLocalDateTime
 import logging.Logger
+import services.api.model.BookingResult
+import services.booking.helpers.BookingHelper
 import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 import kotlin.random.Random
 
+// Needs to be a class because randomNumberGenerator needs to be retained by a class (and not be top level and frozen)
 class BookingService {
     private val randomNumberGenerator = Random(Clock.System.now().hashCode())
 

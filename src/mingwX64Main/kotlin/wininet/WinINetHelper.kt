@@ -1,8 +1,7 @@
 package wininet
 
-import tools.AdaptiveBuffer
+import wininet.tools.AdaptiveBuffer
 import kotlinx.cinterop.*
-import platform.posix.BUFSIZ
 import platform.windows.*
 import kotlin.native.internal.NativePtr
 
@@ -148,7 +147,6 @@ object WinINetHelper {
 
         return data.value.toInt()
     }
-
 
     /**
      * Read the whole response data.

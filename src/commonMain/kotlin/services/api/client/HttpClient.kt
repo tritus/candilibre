@@ -1,6 +1,6 @@
-package api.client
+package services.api.client
 
-internal expect class CandilibreClient {
+internal expect class HttpClient {
     suspend inline fun <reified ExpectedResponse> get(
         endpoint: String,
         vararg urlParams: Pair<String, String>

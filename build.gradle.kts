@@ -1,6 +1,6 @@
 plugins {
-    kotlin("multiplatform") version("1.4.0")
-    id("org.jetbrains.kotlin.plugin.serialization")version("1.4.0")
+    kotlin("multiplatform") version ("1.4.0")
+    id("org.jetbrains.kotlin.plugin.serialization") version ("1.4.0")
 }
 
 repositories {
@@ -12,17 +12,13 @@ repositories {
 val os = org.gradle.internal.os.OperatingSystem.current()!!
 
 kotlin {
-    when {
-        os.isWindows -> mingwX64()
-        os.isMacOsX -> macosX64()
-        //os.isLinux -> linuxX64()
-        else -> throw Error("Unknown host")
-    }.binaries.executable {
-        if (os.isWindows) {
-            windowsResources("candilibre.rc")
-            linkerOpts("-mwindows")
-        }
+    mingwX64().binaries.executable {
+        windowsResources("candilibre.rc")
+        linkerOpts("-mwindows")
     }
+
+    macosX64().binaries.executable()
+    linuxX64().binaries.executable()
 
     sourceSets {
         val commonMain by getting {
@@ -41,11 +37,24 @@ kotlin {
             }
         }
         val mingwX64Main by getting {
-            dependencies {
-                implementation("com.github.msink:libui:0.1.8")
-            }
+            commonDesktopDependencies()
+        }
+        val macosX64Main by getting {
+            commonDesktopDependencies()
+        }
+        val linuxX64Main by getting {
+            commonDesktopDependencies()
+        }
+
+        all {
+            languageSettings.useExperimentalAnnotation("kotlinx.coroutines.ExperimentalCoroutinesApi")
+            languageSettings.useExperimentalAnnotation("kotlinx.coroutines.FlowPreview")
         }
     }
+}
+
+fun org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.commonDesktopDependencies() = dependencies {
+    implementation("com.github.msink:libui:0.1.8")
 }
 
 // Credit goes to https://github.com/msink/kotlin-libui for this method

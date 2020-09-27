@@ -16,8 +16,8 @@ internal object CandilibApi {
     suspend fun getCentres(token: String, depNumber: String): List<Centre> =
         httpClient(token).get("candidat/centres", "departement" to depNumber)
 
-    suspend fun getPlacesForCentre(token: String, centreId: String): List<String> =
-        httpClient(token).get("candidat/places/$centreId")
+    suspend fun getPlacesForCentre(token: String, departmentName: String, centreName: String): List<String> =
+        httpClient(token).get("candidat/places", "geoDepartement" to departmentName, "nomCentre" to centreName)
 
     suspend fun bookPlace(token: String, place: Place): BookingResult =
         httpClient(token).patch("candidat/places", place)

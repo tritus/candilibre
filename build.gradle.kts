@@ -38,6 +38,7 @@ kotlin {
         }
         create("nativeCommonMain")
         val nativeCommonMain by getting {
+            dependsOn(commonMain)
             dependencies {
                 implementation("com.github.msink:libui:0.1.8")
             }

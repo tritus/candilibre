@@ -1,4 +1,4 @@
-package api.client
+package services.api.client
 
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.refTo
@@ -14,7 +14,7 @@ import platform.posix.pclose
 import platform.posix.popen
 import platform.posix.printf
 
-internal actual class CandilibreClient(
+internal actual class HttpClient(
     private val scheme: String,
     private val appHost: String,
     private val apiPath: String,
@@ -23,25 +23,25 @@ internal actual class CandilibreClient(
     actual suspend inline fun <reified ExpectedResponse> get(
         endpoint: String,
         vararg urlParams: Pair<String, String>
-    ): ExpectedResponse? {
+    ): ExpectedResponse {
         return try {
             getFromKtor<ExpectedResponse>(endpoint, *urlParams).also { println("API CALL SUCCESS on $endpoint : $it") }
         } catch (e: Throwable) {
             println("API CALL ERROR on $endpoint : ${e.message}")
-            null
+            throw e
         }
     }
 
     actual suspend inline fun <reified ExpectedResponse, reified Body : Any> patch(
         endpoint: String,
         requestBody: Body
-    ): ExpectedResponse? {
+    ): ExpectedResponse {
         return try {
             patchFromKtor<ExpectedResponse, Body>(endpoint, requestBody)
                 .also { println("API CALL SUCCESS on $endpoint : $it") }
         } catch (e: Throwable) {
             println("API CALL ERROR on $endpoint : ${e.message}")
-            null
+            throw e
         }
     }
 

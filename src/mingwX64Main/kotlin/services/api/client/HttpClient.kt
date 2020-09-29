@@ -5,6 +5,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import services.api.client.errors.CandilibreClientBadRequestException
+import services.api.client.errors.CandilibreClientBadResponseException
+import services.api.client.errors.CandilibreClientBadTokenException
 import services.user.UserService
 import wininet.WinINetHelper
 import kotlin.coroutines.coroutineContext
@@ -80,10 +83,3 @@ internal actual class HttpClient(
         Json { ignoreUnknownKeys = true }.decodeFromString(it)
 
 }
-
-class CandilibreClientBadTokenException(token: String) : Exception("Bad token $token")
-class CandilibreClientBadResponseException(code: Int, url: String, body: String) :
-    Exception("BAD RESPONSE $code from $url : $body")
-
-class CandilibreClientBadRequestException(url: String, cause: Throwable) :
-    Exception("Error while performing request on $url", cause)

@@ -13,6 +13,8 @@ object UIStrings {
     const val candilibTokenErrorLabel = "Votre lien Candilib est expiré ou n'a pas été correctement copié."
     const val userIdExtractionFromTokenErrorLabel = "Votre lien Candilib n'a pas été correctement copié."
     const val stoppingCurrentJobLabel = "Arrêt de la recherche en cours"
-    fun startSearchJobMessage(minDate: String, cities: String) = "Début de la recherche avec les parametres suivants :\n  date minimum : $minDate\n  villes : $cities"
+    fun startSearchJobMessage(minDate: String, cities: String) =
+        "Début de la recherche avec les parametres suivants :\n  date minimum : $minDate\n  villes : $cities"
+
     fun unknownErrorLabel(error: String) = "Oups, une erreur inconnue est arrivée : $error"
 }

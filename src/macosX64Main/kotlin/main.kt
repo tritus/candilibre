@@ -1,4 +1,3 @@
-
 import api.model.BookingResult
 import constants.City
 import constants.PARIS_TIMEZONE

@@ -5,60 +5,48 @@ import kotlinx.coroutines.flow.collect
 import libui.ktx.*
 import ui.UIStrings.appTitle
 import ui.UIStrings.citiesListTitle
-import ui.UIStrings.logAreaInitialText
 import ui.UIStrings.magicLinkFieldTitle
-import ui.UIStrings.magicLinkValidateLabel
 import ui.UIStrings.minDatePickerTitle
 import ui.UIStrings.startSearchButtonLabel
-import viewmodels.CandilibreViewModel
 import ui.model.UIDepartmentData
 import ui.model.UIParamsSectionData
+import viewmodels.CandilibreViewModel
 
 class CandilibreUI {
     private val viewModel = CandilibreViewModel()
 
-    private var viewModelSubscriptions: Job? = null
+    private val lifecycleScope = CoroutineScope(newSingleThreadContext("viewModelObservation"))
 
     // Views
     private var logTextArea: TextArea? = null
     private var parametersBox: VBox? = null
     private var magicLinkTextField: TextField? = null
-    private var magicLinkValidateButton: Button? = null
-    private var cityCheckBoxes = emptyList<Checkbox>()
+    private var cityCheckBoxes = mutableListOf<Checkbox>()
 
     fun start() = appWindow(appTitle, 800, 600) {
-        createContent()
+        createContent(viewModel.paramsSectionData)
         subscribeToViewModel()
     }
 
     private fun onViewWillQuit() {
-        viewModelSubscriptions?.cancel()
+        lifecycleScope.cancel()
 
         logTextArea = null
         parametersBox = null
         magicLinkTextField = null
-        magicLinkValidateButton = null
     }
 
     private fun subscribeToViewModel() {
-        viewModelSubscriptions?.cancel()
-        viewModelSubscriptions = CoroutineScope(newSingleThreadContext("viewModelObservation")).launch {
+        lifecycleScope.launch {
             launch {
                 viewModel.loggingAreaContent.collect { message ->
                     withContext(Dispatchers.Default) { logTextArea?.append(message) }
                 }
             }
-            //launch {
-            //    viewModel.magicLinkAreaIsEditable.collect { isEditable ->
-            //        magicLinkTextField?.readonly = !isEditable
-            //        magicLinkValidateButton?.apply { if (isEditable) enable() else disable() }
-            //    }
-            //}
-            //launch { viewModel.paramsSectionData.collect { parametersBox?.createParamsSection(it) } }
         }
     }
 
-    private fun Window.createContent() {
+    private fun Window.createContent(data: UIParamsSectionData) {
         hbox {
             stretchy = true
 
@@ -69,14 +57,9 @@ class CandilibreUI {
 
             parametersBox = vbox {
                 label(magicLinkFieldTitle)
-                hbox {
-                    magicLinkTextField = textfield(false) { stretchy = true }
-                    magicLinkValidateButton = button(magicLinkValidateLabel) {
-                        action {
-                            viewModel.onValidateMagicLinkClicked(magicLinkTextField?.value ?: "")
-                        }
-                    }
-                }
+                magicLinkTextField = textfield(false)
+
+                createParamsSection(data)
             }
         }
 
@@ -122,7 +105,7 @@ class CandilibreUI {
         vbox {
             label(departmentData.departmentLabel)
             departmentData.citiesLabels.forEach { cityLabel ->
-                checkbox(cityLabel).also { cityCheckBoxes += it }
+                checkbox(cityLabel).also { cityCheckBoxes.add(it) }
             }
         }
     }

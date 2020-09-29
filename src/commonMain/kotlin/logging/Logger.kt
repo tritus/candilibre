@@ -1,7 +1,6 @@
 package logging
 
 import constants.PARIS_TIMEZONE
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.datetime.Clock

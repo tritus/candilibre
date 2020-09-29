@@ -1,8 +1,8 @@
 package wininet
 
-import wininet.tools.AdaptiveBuffer
 import kotlinx.cinterop.*
 import platform.windows.*
+import wininet.tools.AdaptiveBuffer
 import kotlin.native.internal.NativePtr
 
 object WinINetHelper {

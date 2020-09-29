@@ -13,4 +13,10 @@ object UserService {
             ?.value
             ?: throw UnknownTokenFormatException(token, decodedToken)
     }
+
+    fun getToken(magicLink: String): String = magicLink
+        .trim()
+        .split("https://beta.interieur.gouv.fr/candilib/candidat?token=")
+        .firstOrNull { it.isNotBlank() }
+        ?: ""
 }

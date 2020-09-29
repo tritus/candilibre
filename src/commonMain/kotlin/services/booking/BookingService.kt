@@ -24,18 +24,18 @@ class BookingService {
     private val millisecondsRandomDeltaDuringRushHour = 100L // 1/10sec
     private val millisecondsRandomDeltaDuringLazyHour = 60000L // 1min
 
-    suspend fun tryBooking(logger: Logger, token: String, cities: List<City>, minDate: Instant): BookingResult {
+    suspend fun tryBooking(token: String, cities: List<City>, minDate: Instant): BookingResult {
         coroutineContext.ensureActive()
-        val result = BookingHelper.bookASlot(logger, token, cities, minDate)
+        val result = BookingHelper.bookASlot(token, cities, minDate)
         return if (result != null && result.success == true) {
             result
         } else {
-            if (result != null) logger.logFailedResult(result)
+            if (result != null) Logger.logFailedResult(result)
             // Retry after some delay in case of failure
             val waitingTime = getWaitingTime()
-            logger.log("Nouvel essai dans ${waitingTime / 1000f} secondes")
+            Logger.log("Nouvel essai dans ${waitingTime / 1000f} secondes")
             delay(waitingTime)
-            tryBooking(logger, token, cities, minDate)
+            tryBooking(token, cities, minDate)
         }
     }
 

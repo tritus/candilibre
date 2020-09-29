@@ -2,7 +2,6 @@ package api.client
 
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.refTo
-import kotlinx.cinterop.toKString
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

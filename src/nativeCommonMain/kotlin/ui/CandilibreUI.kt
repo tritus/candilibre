@@ -1,14 +1,13 @@
 package ui
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import libui.ktx.*
 import tools.newDispatcher
+import tools.runOnMainThread
 import ui.UIStrings.appTitle
-import ui.UIStrings.citiesListTitle
-import ui.UIStrings.magicLinkFieldTitle
-import ui.UIStrings.minDatePickerTitle
-import ui.UIStrings.startSearchButtonLabel
 import ui.model.UIDepartmentData
 import ui.model.UIParamsSectionData
 import viewmodels.CandilibreViewModel
@@ -39,10 +38,8 @@ class CandilibreUI {
 
     private fun subscribeToViewModel() {
         lifecycleScope.launch {
-            launch {
-                viewModel.loggingAreaContent.collect { message ->
-                    withContext(Dispatchers.Main) { logTextArea?.append(message) }
-                }
+            viewModel.loggingAreaContent.collect { message ->
+                runOnMainThread { logTextArea?.append(message) }
             }
         }
     }
@@ -111,3 +108,4 @@ class CandilibreUI {
         }
     }
 }
+

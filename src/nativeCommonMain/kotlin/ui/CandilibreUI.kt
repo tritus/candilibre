@@ -8,6 +8,10 @@ import libui.ktx.*
 import tools.newDispatcher
 import tools.runOnMainThread
 import ui.UIStrings.appTitle
+import ui.UIStrings.citiesListTitle
+import ui.UIStrings.magicLinkFieldTitle
+import ui.UIStrings.minDatePickerTitle
+import ui.UIStrings.startSearchButtonLabel
 import ui.model.UIDepartmentData
 import ui.model.UIParamsSectionData
 import viewmodels.CandilibreViewModel

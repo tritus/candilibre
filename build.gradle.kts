@@ -36,14 +36,21 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
+        create("nativeCommonMain")
+        val nativeCommonMain by getting {
+            dependsOn(commonMain)
+            dependencies {
+                implementation("com.github.msink:libui:0.1.8")
+            }
+        }
         val mingwX64Main by getting {
-            commonDesktopDependencies()
+            dependsOn(nativeCommonMain)
         }
         val macosX64Main by getting {
-            commonDesktopDependencies()
+            dependsOn(nativeCommonMain)
         }
         val linuxX64Main by getting {
-            commonDesktopDependencies()
+            dependsOn(nativeCommonMain)
         }
 
         all {
@@ -51,10 +58,6 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlinx.coroutines.FlowPreview")
         }
     }
-}
-
-fun org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.commonDesktopDependencies() = dependencies {
-    implementation("com.github.msink:libui:0.1.8")
 }
 
 // Credit goes to https://github.com/msink/kotlin-libui for this method

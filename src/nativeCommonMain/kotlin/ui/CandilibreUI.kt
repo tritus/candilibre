@@ -1,8 +1,12 @@
 package ui
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import libui.ktx.*
+import tools.newDispatcher
+import tools.runOnMainThread
 import ui.UIStrings.appTitle
 import ui.UIStrings.citiesListTitle
 import ui.UIStrings.magicLinkFieldTitle
@@ -15,7 +19,7 @@ import viewmodels.CandilibreViewModel
 class CandilibreUI {
     private val viewModel = CandilibreViewModel()
 
-    private val lifecycleScope = CoroutineScope(newSingleThreadContext("viewModelObservation"))
+    private val lifecycleScope = CoroutineScope(newDispatcher("viewModelObservation"))
 
     // Views
     private var logTextArea: TextArea? = null
@@ -38,10 +42,8 @@ class CandilibreUI {
 
     private fun subscribeToViewModel() {
         lifecycleScope.launch {
-            launch {
-                viewModel.loggingAreaContent.collect { message ->
-                    withContext(Dispatchers.Default) { logTextArea?.append(message) }
-                }
+            viewModel.loggingAreaContent.collect { message ->
+                runOnMainThread { logTextArea?.append(message) }
             }
         }
     }
@@ -110,3 +112,4 @@ class CandilibreUI {
         }
     }
 }
+

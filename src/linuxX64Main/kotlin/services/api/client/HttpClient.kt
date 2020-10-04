@@ -1,8 +1,10 @@
-package api.client
+package services.api.client
 
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.refTo
+import kotlinx.cinterop.toKString
 import kotlinx.coroutines.coroutineScope
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -13,8 +15,10 @@ import platform.posix.fgets
 import platform.posix.pclose
 import platform.posix.popen
 import platform.posix.printf
+import services.api.client.errors.CandilibreClientBadTokenException
+import services.user.UserService
 
-internal actual class CandilibreClient(
+internal actual class HttpClient(
     private val scheme: String,
     private val appHost: String,
     private val apiPath: String,
@@ -23,25 +27,25 @@ internal actual class CandilibreClient(
     actual suspend inline fun <reified ExpectedResponse> get(
         endpoint: String,
         vararg urlParams: Pair<String, String>
-    ): ExpectedResponse? {
+    ): ExpectedResponse {
         return try {
             getFromKtor<ExpectedResponse>(endpoint, *urlParams).also { println("API CALL SUCCESS on $endpoint : $it") }
         } catch (e: Throwable) {
             println("API CALL ERROR on $endpoint : ${e.message}")
-            null
+            throw e
         }
     }
 
     actual suspend inline fun <reified ExpectedResponse, reified Body : Any> patch(
         endpoint: String,
         requestBody: Body
-    ): ExpectedResponse? {
+    ): ExpectedResponse {
         return try {
             patchFromKtor<ExpectedResponse, Body>(endpoint, requestBody)
                 .also { println("API CALL SUCCESS on $endpoint : $it") }
         } catch (e: Throwable) {
             println("API CALL ERROR on $endpoint : ${e.message}")
-            null
+            throw e
         }
     }
 
@@ -51,9 +55,13 @@ internal actual class CandilibreClient(
     ): ExpectedResponse {
         val params = urlParams.joinToString("&") { "${it.first}=${it.second}" }
         val url = "$scheme://$appHost/$apiPath/$endpoint?$params"
-        val command = "curl -X GET \"$url\" -H \"accept: application/json\" -H \"Authorization: Bearer $appJWTToken\""
+        val command = "curl " +
+                "-X GET \"$url\" " +
+                "-H \"accept: application/json\" " +
+                "-H \"Authorization: Bearer $appJWTToken\" " +
+                "-H \"X-USER-ID: ${UserService.getUserId(appJWTToken)}\""
         val result = executeCommand(command)
-        return Json { ignoreUnknownKeys = true }.decodeFromString(result)
+        return decodeResponse(result)
     }
 
     private suspend inline fun <reified ExpectedResponse, reified Body : Any> patchFromKtor(
@@ -62,16 +70,28 @@ internal actual class CandilibreClient(
     ): ExpectedResponse {
         val url = "$scheme://$appHost/$apiPath/$endpoint"
         val body = Json.encodeToString(requestBody).replace("\"", "\\\"")
-        val command =
-            "curl -X PATCH \"$url\" -H \"accept: application/json\" -H \"Authorization: Bearer $appJWTToken\" -H \"Content-Type: application/json\" -d \"$body\""
+        val command = "curl " +
+                "-X PATCH \"$url\" " +
+                "-H \"accept: application/json\" " +
+                "-H \"Authorization: Bearer $appJWTToken\" " +
+                "-H \"Content-Type: application/json\" " +
+                "-H \"X-USER-ID: ${UserService.getUserId(appJWTToken)}\" " +
+                "-d \"$body\""
         val result = executeCommand(command)
         return try {
-            Json { ignoreUnknownKeys = true }.decodeFromString(result)
+            decodeResponse(result)
         } catch (e: Throwable) {
             println("ERROR while decoding json $result")
             throw e
         }
+    }
 
+    private inline fun <reified ExpectedResponse> decodeResponse(response: String): ExpectedResponse {
+        Json { ignoreUnknownKeys = true }
+            .runCatching { decodeFromString<BadTokenResponse>(response) }
+            .getOrNull()
+            ?.let { if (!it.isTokenValid) throw CandilibreClientBadTokenException(appJWTToken) }
+        return Json { ignoreUnknownKeys = true }.decodeFromString(response)
     }
 
     private suspend fun executeCommand(command: String): String = coroutineScope {
@@ -97,4 +117,7 @@ internal actual class CandilibreClient(
         pclose(fp)
         returnString.trim().toString()
     }
+
+    @Serializable
+    private data class BadTokenResponse(val isTokenValid: Boolean)
 }

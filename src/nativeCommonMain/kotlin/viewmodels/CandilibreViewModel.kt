@@ -7,16 +7,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
 import logging.Logger
 import services.api.CandilibApi
-import services.api.client.CandilibreClientBadTokenException
+import services.api.client.errors.CandilibreClientBadTokenException
 import services.booking.BookingService
 import services.user.UserService
 import services.user.errors.UnknownTokenFormatException
+import tools.newDispatcher
 import ui.UIStrings.candilibTokenErrorLabel
 import ui.UIStrings.logAreaInitialText
 import ui.UIStrings.startSearchJobMessage
@@ -27,7 +27,7 @@ import ui.model.UIDepartmentData
 import ui.model.UIParamsSectionData
 
 class CandilibreViewModel {
-    private val viewModelScope = CoroutineScope(newSingleThreadContext("viewModelThread"))
+    private val viewModelScope = CoroutineScope(newDispatcher("viewModelThread"))
 
     private var runningSearchJob = ConflatedBroadcastChannel<Job?>(null)
 

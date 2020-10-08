@@ -31,6 +31,7 @@ Un robot pour obtenir des places de permis sur le site candilib.
  - Attendre longtemps...
  
 ## Notes
+ - Parfois, la fenetre s'ouvre avec une taille trop petite pour afficher la zone d'info. Dans ce cas il faut l'agrandir en la redimensionnant.
  - Ne pas hésiter à laisser le logiciel tourner toute la journée. En cas de désistement d'un autre candidat vous pourrez récupérer sa place.
  - Eviter de laisser tourner pendant la nuit. Personne ne se désistera à 5h du matin.
  - Le rythme des essai de réservation est de un essai toutes les cinq minutes environ puis une fois toutes les secondes autour de midi.

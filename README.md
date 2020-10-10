@@ -3,6 +3,11 @@
 Un robot pour obtenir des places de permis sur le site candilib.
 
 ---
+
+## Disclaimer
+
+Je ne cautionne ni n'encourage l'utilisation de robot pour réserver sa place d'examen. Toute utilisation de ce robot se fera au risques et périls de son utilisateur et je ne serai en aucun cas responsable de son utilisation.
+
 ## Prérequis
 
 ### Mac

@@ -1,5 +1,10 @@
 package services.api.client
 
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.curl.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.refTo
 import kotlinx.cinterop.toKString
@@ -24,6 +29,8 @@ internal actual class HttpClient(
     private val apiPath: String,
     private val appJWTToken: String
 ) {
+    private val httpClient: HttpClient = io.ktor.client.HttpClient(Curl)
+
     actual suspend inline fun <reified ExpectedResponse> get(
         endpoint: String,
         vararg urlParams: Pair<String, String>
@@ -53,15 +60,22 @@ internal actual class HttpClient(
         endpoint: String,
         vararg urlParams: Pair<String, String>
     ): ExpectedResponse {
-        val params = urlParams.joinToString("&") { "${it.first}=${it.second}" }
+        val params = urlParams.joinToString("&") { "${it.first}=${(it.second).encodeURLParameter()}" }
         val url = "$scheme://$appHost/$apiPath/$endpoint?$params"
-        val command = "curl " +
-                "-X GET \"$url\" " +
-                "-H \"accept: application/json\" " +
-                "-H \"Authorization: Bearer $appJWTToken\" " +
-                "-H \"X-USER-ID: ${UserService.getUserId(appJWTToken)}\""
-        val result = executeCommand(command)
-        return decodeResponse(result)
+        val response = httpClient.get<HttpResponse>(url) {
+            headers {
+                append("Accept", "application/json")
+                append("Authorization", "Bearer $appJWTToken")
+                append("X-USER-ID", UserService.getUserId(appJWTToken))
+            }
+        }
+        val responseBody = response.readText()
+        return try {
+            decodeResponse(responseBody)
+        } catch (e: Throwable) {
+            println("ERROR while decoding json $responseBody")
+            throw e
+        }
     }
 
     private suspend inline fun <reified ExpectedResponse, reified Body : Any> patchFromKtor(
@@ -69,19 +83,19 @@ internal actual class HttpClient(
         requestBody: Body
     ): ExpectedResponse {
         val url = "$scheme://$appHost/$apiPath/$endpoint"
-        val body = Json.encodeToString(requestBody).replace("\"", "\\\"")
-        val command = "curl " +
-                "-X PATCH \"$url\" " +
-                "-H \"accept: application/json\" " +
-                "-H \"Authorization: Bearer $appJWTToken\" " +
-                "-H \"Content-Type: application/json\" " +
-                "-H \"X-USER-ID: ${UserService.getUserId(appJWTToken)}\" " +
-                "-d \"$body\""
-        val result = executeCommand(command)
+        val response = httpClient.patch<HttpResponse>(url) {
+            headers {
+                append("Accept", "application/json")
+                append("Authorization", "Bearer $appJWTToken")
+                append("X-USER-ID", UserService.getUserId(appJWTToken))
+            }
+            body = Json.encodeToString(requestBody).replace("\"", "\\\"")
+        }
+        val responseBody = response.readText()
         return try {
-            decodeResponse(result)
+            decodeResponse(responseBody)
         } catch (e: Throwable) {
-            println("ERROR while decoding json $result")
+            println("ERROR while decoding json $responseBody")
             throw e
         }
     }
@@ -92,30 +106,6 @@ internal actual class HttpClient(
             .getOrNull()
             ?.let { if (!it.isTokenValid) throw CandilibreClientBadTokenException(appJWTToken) }
         return Json { ignoreUnknownKeys = true }.decodeFromString(response)
-    }
-
-    private suspend fun executeCommand(command: String): String = coroutineScope {
-        val fp: CPointer<FILE>? = popen(command, "r")
-        val buffer = ByteArray(4096)
-        val returnString = StringBuilder()
-
-        /* Open the command for reading. */
-        if (fp == NULL) {
-            printf("Failed to run command\n")
-            exit(1)
-        }
-
-        /* Read the output a line at a time - output it. */
-        var scan = fgets(buffer.refTo(0), buffer.size, fp)
-        if (scan != null) {
-            while (scan != NULL) {
-                returnString.append(scan!!.toKString())
-                scan = fgets(buffer.refTo(0), buffer.size, fp)
-            }
-        }
-        /* close */
-        pclose(fp)
-        returnString.trim().toString()
     }
 
     @Serializable

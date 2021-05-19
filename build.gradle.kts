@@ -48,9 +48,17 @@ kotlin {
         }
         val macosX64Main by getting {
             dependsOn(nativeCommonMain)
+            dependencies {
+                implementation("io.ktor:ktor-client-curl:1.5.1")
+                implementation("io.ktor:ktor-client-core:1.5.1")
+            }
         }
         val linuxX64Main by getting {
             dependsOn(nativeCommonMain)
+            dependencies {
+                implementation("io.ktor:ktor-client-curl:1.5.1")
+                implementation("io.ktor:ktor-client-core:1.5.1")
+            }
         }
 
         all {

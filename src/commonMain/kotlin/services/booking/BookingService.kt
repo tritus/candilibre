@@ -18,7 +18,6 @@ import kotlin.random.Random
 class BookingService {
     private val randomNumberGenerator = Random(Clock.System.now().hashCode())
 
-    private val minutesRangeAroundMidday = 7L
     private val millisecondsStepDuringRushHour = 1000L // 1sec
     private val millisecondsStepDuringLazyHour = 300000L // 5min
     private val millisecondsRandomDeltaDuringRushHour = 100L // 1/10sec
@@ -60,8 +59,6 @@ class BookingService {
     private fun itIsRushHour(): Boolean {
         val now = Clock.System.now().toLocalDateTime(PARIS_TIMEZONE)
         val nowMinutesOfDay = now.hour * 60 + now.minute
-        val middayMinutesOfDay = 12 * 60
-        val minutesToMidday = abs(middayMinutesOfDay - nowMinutesOfDay)
-        return minutesToMidday < minutesRangeAroundMidday
+        return nowMinutesOfDay in 720..780;
     }
 }
